@@ -584,22 +584,10 @@
     envTex.dispose();
   })();
 
-  // ---- contact shadow ----
-  var contactShadowMat;
-  (function(){
-    var c = document.createElement('canvas'); c.width=256; c.height=256;
-    var ctx = c.getContext('2d');
-    var rg = ctx.createRadialGradient(128,128,10,128,128,120);
-    rg.addColorStop(0,'rgba(20,16,8,0.38)'); rg.addColorStop(1,'rgba(20,16,8,0)');
-    ctx.fillStyle = rg; ctx.fillRect(0,0,256,256);
-    var tex = new THREE.CanvasTexture(c);
-    contactShadowMat = new THREE.MeshBasicMaterial({map:tex, transparent:true, depthWrite:false});
-    var geo = new THREE.PlaneGeometry(0.62,0.62);
-    var mesh = new THREE.Mesh(geo,contactShadowMat);
-    mesh.rotation.x = -Math.PI/2;
-    mesh.position.y = 0.001;
-    scene.add(mesh);
-  })();
+  // contact shadow removed — the flat ground-plane kept re-appearing as a stray
+  // pale band when foreshortened at low camera angles; the kiln photo backdrop
+  // already grounds the product without it.
+  var contactShadowMat = null;
 
   // ---- product group ----
   var potGroup = new THREE.Group();
@@ -828,7 +816,7 @@
       dctx.globalCompositeOperation='source-over';
 
       var FRONT_U = 0.365;
-      var dW = W*0.40, dH = dW*(medRgb.height/medRgb.width);
+      var dW = W*0.52, dH = dW*(medRgb.height/medRgb.width);
       var dx = W*FRONT_U - dW/2;
       var dy = H*0.36;
       [dx, dx-W, dx+W].forEach(function(px){ ctx.drawImage(dcnv, px, dy, dW, dH); });

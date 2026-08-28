@@ -623,7 +623,7 @@
     [0.47,0.555],[0.458,0.542],[0.44,0.50],[0.37,0.38],[0.28,0.22],[0.16,0.11],[0.0,0.085]
   ].map(function(p){ return new THREE.Vector2(p[0],p[1]); });
   var interiorGeo = new THREE.LatheGeometry(interiorPts, 48);
-  var interiorMat = new THREE.MeshPhysicalMaterial({color:0xEFE9D9, roughness:0.42, clearcoat:0.25, side:THREE.DoubleSide});
+  var interiorMat = new THREE.MeshPhysicalMaterial({color:0xF2ECDD, roughness:0.22, clearcoat:0.65, clearcoatRoughness:0.15, envMapIntensity:0.7, side:THREE.DoubleSide});
   var interiorMesh = new THREE.Mesh(interiorGeo, interiorMat);
   potGroup.add(interiorMesh);
 
@@ -657,7 +657,7 @@
   var lidMat = new THREE.MeshPhysicalMaterial({color:0xffffff, roughness:0.55, clearcoat:0, envMapIntensity:0.12, side:THREE.FrontSide});
   var lidMesh = new THREE.Mesh(lidGeo, lidMat);
   lidGroup.add(lidMesh);
-  var lidInnerMat = new THREE.MeshPhysicalMaterial({color:0xF3EEDE, roughness:0.5, clearcoat:0.12, side:THREE.BackSide});
+  var lidInnerMat = new THREE.MeshPhysicalMaterial({color:0xF2ECDD, roughness:0.25, clearcoat:0.55, clearcoatRoughness:0.18, envMapIntensity:0.6, side:THREE.BackSide});
   var lidInnerMesh = new THREE.Mesh(lidGeo, lidInnerMat);
   lidGroup.add(lidInnerMesh);
 

@@ -540,6 +540,7 @@
     camera.updateProjectionMatrix();
   }
   var PHI_FADE_START = 1.33;
+  var SHADOW_FADE_START = 1.30, SHADOW_FADE_END = 1.36;
   function applyCamera(){
     var r = camRadiusBase*zoom;
     camera.position.set(
@@ -548,9 +549,10 @@
       camTarget.z + r*Math.sin(camPhi)*Math.cos(camTheta)
     );
     camera.lookAt(camTarget);
-    var fade = 1 - THREE.MathUtils.clamp((camPhi-PHI_FADE_START)/(PHI_MAX-PHI_FADE_START), 0, 1);
-    if(contactShadowMat) contactShadowMat.opacity = fade;
-    if(footCapMat) footCapMat.opacity = fade;
+    var footFade = 1 - THREE.MathUtils.clamp((camPhi-PHI_FADE_START)/(PHI_MAX-PHI_FADE_START), 0, 1);
+    var shadowFade = 1 - THREE.MathUtils.clamp((camPhi-SHADOW_FADE_START)/(SHADOW_FADE_END-SHADOW_FADE_START), 0, 1);
+    if(contactShadowMat) contactShadowMat.opacity = shadowFade;
+    if(footCapMat) footCapMat.opacity = footFade;
   }
 
   // ---- lighting + procedural environment ----
@@ -592,7 +594,7 @@
     ctx.fillStyle = rg; ctx.fillRect(0,0,256,256);
     var tex = new THREE.CanvasTexture(c);
     contactShadowMat = new THREE.MeshBasicMaterial({map:tex, transparent:true, depthWrite:false});
-    var geo = new THREE.PlaneGeometry(0.85,0.85);
+    var geo = new THREE.PlaneGeometry(0.62,0.62);
     var mesh = new THREE.Mesh(geo,contactShadowMat);
     mesh.rotation.x = -Math.PI/2;
     mesh.position.y = 0.001;

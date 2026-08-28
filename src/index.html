@@ -632,6 +632,13 @@
   var liquidMesh = new THREE.Mesh(liquidGeo, liquidMat);
   liquidMesh.position.y = 0.125;
   liquidMesh.scale.y = 0.001;
+  // hidden until poured: squashed to scale.y~0 the cylinder's top ring (r=0.39,
+  // meant for a full cup) collapses onto the same height as its narrower base
+  // ring, and 0.39 is wider than the body wall at that height (~0.32) — so a
+  // "flattened" liquid mesh still pokes a pale ring out through the body even
+  // at zero fill. This was the real source of the recurring "vành nước" bug;
+  // earlier fixes chased the contact shadow and foot cap, which were never it.
+  liquidMesh.visible = false;
   potGroup.add(liquidMesh);
 
   // ripple
@@ -935,6 +942,7 @@
   }
   function pourWater(){
     streamMesh.visible = true; dropletMesh.visible = true; spoutMesh.visible = true;
+    liquidMesh.visible = true;
     liquidMat.color.copy(WATER_COLOR);
     animateValue(0,1,450,easeOutCubic,function(v){ streamMat.opacity = v*0.92; dropletMat.opacity = v*0.9; spoutMat.opacity = v; });
     animateValue(0,1,2000,easeInOutSine,function(v){
@@ -972,6 +980,7 @@
     });
     clearLeaves();
     liquidMesh.scale.y = 0.001; liquidMesh.scale.x = 1; liquidMesh.scale.z = 1;
+    liquidMesh.visible = false;
     liquidMat.color.copy(WATER_COLOR);
     streamMat.opacity = 0; dropletMat.opacity = 0; rippleMat.opacity = 0; spoutMat.opacity = 0;
     streamMesh.visible = false; dropletMesh.visible = false; spoutMesh.visible = false;

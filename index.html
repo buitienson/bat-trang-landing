@@ -799,6 +799,169 @@
     });
   }
 
+  // ---- Tứ Quý (Four Seasons) panels: Tùng / Trúc / Mai drawn to match Cúc ----
+  // The real photos only cover the Cúc (chrysanthemum) panel. This body is
+  // clearly meant to carry the classic four-panel pine/bamboo/plum/chrysanthemum
+  // set, so the other three are drawn here as cobalt line-and-wash paintings in
+  // the same register, rather than reusing Cúc a second time around the pot.
+  var MOTIF_INK = '#13285a', MOTIF_INK2 = '#2c4a80', MOTIF_INK3 = '#5878ab';
+  function motifGroundWash(mctx,w,h){
+    var g = mctx.createRadialGradient(w*0.5,h*0.52,10, w*0.5,h*0.52, w*0.58);
+    g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.55,'rgba(255,255,255,0.95)');
+    g.addColorStop(0.82,'rgba(255,255,255,0.55)'); g.addColorStop(1,'rgba(255,255,255,0)');
+    mctx.save(); mctx.fillStyle=g;
+    mctx.beginPath(); mctx.ellipse(w*0.5,h*0.5,w*0.49,h*0.49,0,0,Math.PI*2); mctx.fill();
+    mctx.restore();
+  }
+  function motifStroke(mctx, pts, width, color, alpha){
+    mctx.save();
+    mctx.globalAlpha = alpha===undefined?1:alpha;
+    mctx.strokeStyle = color; mctx.lineWidth = width; mctx.lineCap='round'; mctx.lineJoin='round';
+    mctx.beginPath(); mctx.moveTo(pts[0][0], pts[0][1]);
+    for(var i=1;i<pts.length-1;i+=2) mctx.quadraticCurveTo(pts[i][0],pts[i][1], pts[i+1][0],pts[i+1][1]);
+    mctx.stroke();
+    mctx.restore();
+  }
+  function pineNeedles(mctx, x,y, angle, spread, count, len, color, lw){
+    mctx.save();
+    mctx.strokeStyle = color; mctx.lineWidth=lw||2.6; mctx.lineCap='round';
+    for(var i=0;i<count;i++){
+      var a = angle - spread/2 + (spread*i/(count-1));
+      var l = len*(0.72+0.28*Math.sin(i*2.1));
+      mctx.beginPath(); mctx.moveTo(x,y);
+      mctx.quadraticCurveTo(x+Math.cos(a)*l*0.6, y+Math.sin(a)*l*0.6+6, x+Math.cos(a)*l, y+Math.sin(a)*l);
+      mctx.stroke();
+    }
+    mctx.restore();
+  }
+  function pinecone(mctx,x,y,rot,scale){
+    mctx.save(); mctx.translate(x,y); mctx.rotate(rot); mctx.scale(scale,scale);
+    mctx.fillStyle=MOTIF_INK; mctx.beginPath();
+    mctx.moveTo(0,-20); mctx.bezierCurveTo(11,-16, 13,4, 8,20); mctx.bezierCurveTo(3,26,-3,26,-8,20);
+    mctx.bezierCurveTo(-13,4,-11,-16,0,-20); mctx.fill();
+    mctx.strokeStyle='rgba(255,255,255,0.65)'; mctx.lineWidth=1.4;
+    for(var k=-2;k<=2;k++){ mctx.beginPath(); mctx.moveTo(-9,k*7); mctx.lineTo(9,k*7+3); mctx.stroke(); }
+    mctx.restore();
+  }
+  function drawTung(mctx,w,h){
+    motifGroundWash(mctx,w,h);
+    motifStroke(mctx, [[40,470],[150,400],[240,360],[290,280],[335,190],[365,110]], 13, MOTIF_INK, 1);
+    motifStroke(mctx, [[290,280],[230,255],[165,245]], 7, MOTIF_INK, 1);
+    motifStroke(mctx, [[240,360],[300,340],[350,335]], 7, MOTIF_INK, 1);
+    motifStroke(mctx, [[335,190],[400,170],[455,175]], 6, MOTIF_INK, 1);
+    motifStroke(mctx, [[365,110],[410,70],[450,45]], 5.5, MOTIF_INK, 1);
+    pineNeedles(mctx, 365,110, -1.05, 2.5, 15, 78, MOTIF_INK2, 2.6);
+    pineNeedles(mctx, 450,45,  -0.85, 2.2, 12, 60, MOTIF_INK2, 2.3);
+    pineNeedles(mctx, 455,175, -0.55, 2.3, 13, 66, MOTIF_INK2, 2.4);
+    pineNeedles(mctx, 165,245, -0.6, 2.2, 12, 62, MOTIF_INK3, 2.3);
+    pineNeedles(mctx, 350,335, -1.3, 2.0, 11, 55, MOTIF_INK3, 2.2);
+    pineNeedles(mctx, 290,280, -0.9, 1.6, 8, 40, MOTIF_INK3, 2.0);
+    pinecone(mctx, 300,225, 0.55, 1.05);
+    pinecone(mctx, 400,205, -0.3, 0.85);
+  }
+  function bambooStalk(mctx, pts, width, color){
+    mctx.save();
+    mctx.strokeStyle=color; mctx.lineWidth=width; mctx.lineCap='round'; mctx.lineJoin='round';
+    mctx.beginPath(); mctx.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length-1;i+=2) mctx.quadraticCurveTo(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]);
+    mctx.stroke();
+    mctx.lineWidth = Math.max(2, width*0.28);
+    mctx.strokeStyle = '#ffffff'; mctx.globalAlpha = 0.85;
+    var n = pts.length;
+    for(var k=2;k<n-1;k+=2){
+      var p = pts[k], prev = pts[k-2];
+      var dx = p[0]-prev[0], dy=p[1]-prev[1];
+      var len = Math.sqrt(dx*dx+dy*dy)||1;
+      var nx = -dy/len, ny = dx/len;
+      mctx.beginPath();
+      mctx.moveTo(p[0]-nx*width*0.42, p[1]-ny*width*0.42);
+      mctx.lineTo(p[0]+nx*width*0.42, p[1]+ny*width*0.42);
+      mctx.stroke();
+    }
+    mctx.restore();
+  }
+  function bambooLeaf(mctx, x,y, angle, len, wid, color){
+    mctx.save(); mctx.translate(x,y); mctx.rotate(angle);
+    mctx.fillStyle = color;
+    mctx.beginPath(); mctx.moveTo(0,0);
+    mctx.quadraticCurveTo(len*0.28, -wid, len, 0);
+    mctx.quadraticCurveTo(len*0.28, wid*0.35, 0,0);
+    mctx.fill();
+    mctx.restore();
+  }
+  function bambooLeafCluster(mctx, x,y, baseAngle, spread, count, len, color){
+    for(var i=0;i<count;i++){
+      var a = baseAngle - spread/2 + spread*i/(count-1);
+      var l = len*(0.8+0.2*Math.sin(i*1.9));
+      bambooLeaf(mctx, x,y, a, l, 9+i%3*1.5, color);
+    }
+  }
+  function drawTruc(mctx,w,h){
+    motifGroundWash(mctx,w,h);
+    bambooStalk(mctx, [[170,485],[178,410],[158,410],[165,335],[145,335],[153,255],[133,255],[141,170],[121,170],[128,80]], 20, MOTIF_INK);
+    bambooStalk(mctx, [[310,485],[325,415],[310,415],[320,335],[305,335],[315,245],[300,245],[308,145]], 17, MOTIF_INK2);
+    bambooStalk(mctx, [[440,485],[450,435],[438,435],[445,365],[432,365],[440,285],[427,285],[434,200]], 14, MOTIF_INK3);
+    bambooLeafCluster(mctx, 141,170, -2.5, 1.3, 4, 100, MOTIF_INK);
+    bambooLeafCluster(mctx, 128,80,  -2.2, 1.4, 5, 115, MOTIF_INK);
+    bambooLeafCluster(mctx, 153,255, -2.7, 1.1, 3, 70,  MOTIF_INK);
+    bambooLeafCluster(mctx, 315,245, -0.5, 1.3, 5, 105, MOTIF_INK2);
+    bambooLeafCluster(mctx, 308,145, -0.8, 1.2, 4, 90,  MOTIF_INK2);
+    bambooLeafCluster(mctx, 320,335,  0.55,1.0, 3, 55,  MOTIF_INK2);
+    bambooLeafCluster(mctx, 440,285, -0.6, 1.2, 4, 88,  MOTIF_INK3);
+    bambooLeafCluster(mctx, 434,200, -0.3, 1.1, 4, 75,  MOTIF_INK3);
+  }
+  function plumZigzag(mctx, pts, width, color){
+    mctx.save();
+    mctx.strokeStyle=color; mctx.lineWidth=width; mctx.lineCap='round'; mctx.lineJoin='round';
+    mctx.beginPath(); mctx.moveTo(pts[0][0],pts[0][1]);
+    for(var i=1;i<pts.length;i++) mctx.lineTo(pts[i][0],pts[i][1]);
+    mctx.stroke();
+    mctx.restore();
+  }
+  function plumBlossom(mctx, x,y, r, rot, color, filled){
+    mctx.save(); mctx.translate(x,y); mctx.rotate(rot);
+    mctx.strokeStyle=color; mctx.lineWidth=Math.max(1.5,r*0.14);
+    for(var i=0;i<5;i++){
+      var a = i*(Math.PI*2/5);
+      var px = Math.cos(a)*r, py=Math.sin(a)*r;
+      mctx.save(); mctx.translate(px*0.42,py*0.42); mctx.rotate(a);
+      mctx.beginPath(); mctx.moveTo(0,0);
+      mctx.bezierCurveTo(r*0.55,-r*0.5, r*0.55,r*0.5, 0,0);
+      mctx.closePath();
+      if(filled){ mctx.fillStyle=color; mctx.globalAlpha=0.18; mctx.fill(); mctx.globalAlpha=1; }
+      mctx.stroke();
+      mctx.restore();
+    }
+    mctx.fillStyle = color;
+    for(var k=0;k<5;k++){
+      var a2 = k*(Math.PI*2/5)+0.4;
+      mctx.beginPath(); mctx.arc(Math.cos(a2)*r*0.16,Math.sin(a2)*r*0.16, Math.max(1,r*0.05),0,Math.PI*2); mctx.fill();
+    }
+    mctx.restore();
+  }
+  function plumBud(mctx,x,y,r,color){
+    mctx.save(); mctx.fillStyle=color; mctx.beginPath(); mctx.arc(x,y,r,0,Math.PI*2); mctx.fill(); mctx.restore();
+  }
+  function drawMai(mctx,w,h){
+    motifGroundWash(mctx,w,h);
+    plumZigzag(mctx, [[60,470],[130,430],[120,370],[190,340],[175,270],[250,230],[230,160],[300,120]], 11, MOTIF_INK);
+    plumZigzag(mctx, [[190,340],[240,320],[290,300]], 5, MOTIF_INK2);
+    plumZigzag(mctx, [[250,230],[300,250],[350,260]], 5, MOTIF_INK2);
+    plumZigzag(mctx, [[230,160],[280,150],[330,175]], 4.5, MOTIF_INK3);
+    plumZigzag(mctx, [[300,120],[340,90],[385,80]], 5, MOTIF_INK);
+    plumBlossom(mctx, 290,300, 30, 0.3, MOTIF_INK, true);
+    plumBlossom(mctx, 350,260, 26, -0.5, MOTIF_INK2, true);
+    plumBlossom(mctx, 385,80,  32, 0.6, MOTIF_INK, true);
+    plumBlossom(mctx, 330,175, 24, 0.1, MOTIF_INK2, true);
+    plumBlossom(mctx, 130,430, 22, -0.3, MOTIF_INK3, false);
+    plumBlossom(mctx, 175,270, 20, 0.5, MOTIF_INK3, false);
+    plumBud(mctx, 240,320, 6, MOTIF_INK2);
+    plumBud(mctx, 300,250, 5, MOTIF_INK2);
+    plumBud(mctx, 280,150, 6, MOTIF_INK3);
+    plumBud(mctx, 120,370, 5, MOTIF_INK3);
+    plumBud(mctx, 340,90, 5, MOTIF_INK);
+  }
+
   // ---- body + lid textures from real photos ----
   Promise.all([loadImage(ASSETS.tile), loadImage(ASSETS.medRgb), loadImage(ASSETS.medAlpha), loadImage(ASSETS.lidTop)])
     .then(function(imgs){
@@ -823,25 +986,25 @@
       dctx.drawImage(medAlpha,0,0,medRgb.width,medRgb.height);
       dctx.globalCompositeOperation='source-over';
 
-      // mirrored copy for the far side — the real photos only cover ~180°
-      // of the cup, so the back reuses the same real medallion, flipped,
-      // rather than leaving it as bare tiled ground (twin opposing floral
-      // cartouches is the standard layout on this style of gaiwan anyway).
-      var dcnvFlip=document.createElement('canvas'); dcnvFlip.width=medRgb.width; dcnvFlip.height=medRgb.height;
-      var dctxFlip=dcnvFlip.getContext('2d');
-      dctxFlip.translate(medRgb.width,0); dctxFlip.scale(-1,1);
-      dctxFlip.drawImage(dcnv,0,0);
+      var tungCnv=document.createElement('canvas'); tungCnv.width=medRgb.width; tungCnv.height=medRgb.height;
+      drawTung(tungCnv.getContext('2d'), tungCnv.width, tungCnv.height);
+      var trucCnv=document.createElement('canvas'); trucCnv.width=medRgb.width; trucCnv.height=medRgb.height;
+      drawTruc(trucCnv.getContext('2d'), trucCnv.width, trucCnv.height);
+      var maiCnv=document.createElement('canvas'); maiCnv.width=medRgb.width; maiCnv.height=medRgb.height;
+      drawMai(maiCnv.getContext('2d'), maiCnv.width, maiCnv.height);
 
-      var FRONT_U = 0.365, BACK_U = (FRONT_U+0.5)%1;
-      // 0.46, not 0.52: at exactly half-circumference apart, anything wider
-      // than 0.50 makes the two cartouches' tapered tops touch and pinch the
-      // dark ground between them into a stray-looking notch.
-      var dW = W*0.46, dH = dW*(medRgb.height/medRgb.width);
+      // four panels around the body, in seasonal order (Thu→Đông→Xuân→Hạ):
+      // Cúc is the one real photo; Tùng/Mai/Trúc are the drawn matches above.
+      var dW = W*0.235, dH = dW*(medRgb.height/medRgb.width);
       var dy = H*0.36;
-      var dx = W*FRONT_U - dW/2;
-      [dx, dx-W, dx+W].forEach(function(px){ ctx.drawImage(dcnv, px, dy, dW, dH); });
-      var dx2 = W*BACK_U - dW/2;
-      [dx2, dx2-W, dx2+W].forEach(function(px){ ctx.drawImage(dcnvFlip, px, dy, dW, dH); });
+      function placePanel(img, u){
+        var px = W*u - dW/2;
+        [px, px-W, px+W].forEach(function(p){ ctx.drawImage(img, p, dy, dW, dH); });
+      }
+      placePanel(dcnv, 0.365);     // Cúc — thu
+      placePanel(tungCnv, 0.615);  // Tùng — đông
+      placePanel(maiCnv, 0.865);   // Mai — xuân
+      placePanel(trucCnv, 0.115);  // Trúc — hạ
 
       var bodyTex = new THREE.CanvasTexture(cnv);
       bodyTex.wrapS = THREE.RepeatWrapping; bodyTex.wrapT = THREE.ClampToEdgeWrapping;

@@ -610,6 +610,7 @@
     camera.aspect = w/h;
     camera.updateProjectionMatrix();
   }
+  var PHI_FADE_START = 1.33;
   function applyCamera(){
     var r = camRadiusBase*zoom;
     camera.position.set(
@@ -618,6 +619,9 @@
       camTarget.z + r*Math.sin(camPhi)*Math.cos(camTheta)
     );
     camera.lookAt(camTarget);
+    var fade = 1 - THREE.MathUtils.clamp((camPhi-PHI_FADE_START)/(PHI_MAX-PHI_FADE_START), 0, 1);
+    if(contactShadowMat) contactShadowMat.opacity = fade;
+    if(footCapMat) footCapMat.opacity = fade;
   }
 
   // ---- lighting + procedural environment ----
@@ -650,6 +654,7 @@
   })();
 
   // ---- contact shadow ----
+  var contactShadowMat;
   (function(){
     var c = document.createElement('canvas'); c.width=256; c.height=256;
     var ctx = c.getContext('2d');
@@ -657,9 +662,9 @@
     rg.addColorStop(0,'rgba(20,16,8,0.38)'); rg.addColorStop(1,'rgba(20,16,8,0)');
     ctx.fillStyle = rg; ctx.fillRect(0,0,256,256);
     var tex = new THREE.CanvasTexture(c);
-    var mat = new THREE.MeshBasicMaterial({map:tex, transparent:true, depthWrite:false});
+    contactShadowMat = new THREE.MeshBasicMaterial({map:tex, transparent:true, depthWrite:false});
     var geo = new THREE.PlaneGeometry(0.85,0.85);
-    var mesh = new THREE.Mesh(geo,mat);
+    var mesh = new THREE.Mesh(geo,contactShadowMat);
     mesh.rotation.x = -Math.PI/2;
     mesh.position.y = 0.001;
     scene.add(mesh);
@@ -685,7 +690,7 @@
 
   var footCapGeo = new THREE.CircleGeometry(0.22, 48);
   footCapGeo.rotateX(-Math.PI/2);
-  var footCapMat = new THREE.MeshPhysicalMaterial({color:0xEFE6D2, roughness:0.75, clearcoat:0, side:THREE.DoubleSide});
+  var footCapMat = new THREE.MeshPhysicalMaterial({color:0xEFE6D2, roughness:0.75, clearcoat:0, side:THREE.DoubleSide, transparent:true, opacity:1});
   var footCapMesh = new THREE.Mesh(footCapGeo, footCapMat);
   footCapMesh.position.y = 0.002;
   potGroup.add(footCapMesh);

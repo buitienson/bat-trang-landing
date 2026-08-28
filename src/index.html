@@ -619,7 +619,7 @@
 
   var footCapGeo = new THREE.CircleGeometry(0.22, 48);
   footCapGeo.rotateX(-Math.PI/2);
-  var footCapMat = new THREE.MeshPhysicalMaterial({color:0xEFE6D2, roughness:0.75, clearcoat:0, side:THREE.DoubleSide, transparent:true, opacity:1});
+  var footCapMat = new THREE.MeshPhysicalMaterial({color:0xEFE6D2, roughness:0.75, clearcoat:0, side:THREE.DoubleSide, transparent:true, opacity:1, depthWrite:true});
   var footCapMesh = new THREE.Mesh(footCapGeo, footCapMat);
   footCapMesh.position.y = 0.002;
   potGroup.add(footCapMesh);

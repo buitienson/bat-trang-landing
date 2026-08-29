@@ -39,11 +39,13 @@
 
   *{box-sizing:border-box;}
   .kiln-world{ position:fixed; inset:0; width:100vw; height:100vh; overflow:hidden; background:#0d0805; }
-  .kiln-world img{ width:100%; height:100%; object-fit:cover; object-position:50% 30%; display:block; filter:blur(2.5px) saturate(1.05); transform:scale(1.03); }
+  .kiln-world img{ width:100%; height:100%; object-fit:cover; object-position:50% 30%; display:block; filter:blur(2.5px) saturate(1.05) brightness(0.72); transform:scale(1.03); }
   .kiln-world::after{ content:""; position:absolute; inset:0;
+    /* darkened per feedback: a lighter kiln backdrop washed out the pale pour
+       stream and droplet, making the water hard to read as it left the spout */
     background:
-      radial-gradient(70% 60% at 50% 38%, transparent 30%, rgba(9,5,3,0.55) 100%),
-      linear-gradient(180deg, rgba(8,5,3,0.55) 0%, rgba(8,5,3,0.15) 22%, rgba(8,5,3,0.1) 60%, rgba(8,5,3,0.6) 100%); }
+      radial-gradient(70% 60% at 50% 38%, transparent 12%, rgba(6,3,2,0.68) 100%),
+      linear-gradient(180deg, rgba(5,3,2,0.68) 0%, rgba(5,3,2,0.34) 22%, rgba(5,3,2,0.3) 60%, rgba(5,3,2,0.74) 100%); }
 
   .corner-motif{ position:fixed; width:clamp(80px,9vw,130px); height:clamp(80px,9vw,130px); z-index:3;
     pointer-events:none; opacity:0; transition:opacity 1s ease .3s, transform .35s cubic-bezier(.2,.7,.2,1);
@@ -624,22 +626,31 @@
   potGroup.add(interiorMesh);
 
   // liquid (tea)
-  var liquidGeo = new THREE.CylinderGeometry(0.39,0.16,0.37,40,1,false);
-  liquidGeo.translate(0,0.5*0.37,0);
+  var LIQUID_R_BOTTOM = 0.16, LIQUID_R_TOP = 0.39, LIQUID_MAX_H = 0.37, LIQUID_BASE_Y = 0.125;
   var WATER_COLOR = new THREE.Color(0xF0F2EA);
-  var TEA_COLOR = new THREE.Color(0xF0CE1E);
+  var TEA_COLOR = new THREE.Color(0xCBD23C); // greener per feedback — was pure gold (F0CE1E)
   var liquidMat = new THREE.MeshPhysicalMaterial({color:WATER_COLOR.clone(), transparent:true, opacity:0.6, roughness:0.06, clearcoat:0.85, clearcoatRoughness:0.04, envMapIntensity:0.55, depthWrite:true});
-  var liquidMesh = new THREE.Mesh(liquidGeo, liquidMat);
-  liquidMesh.position.y = 0.125;
-  liquidMesh.scale.y = 0.001;
-  // hidden until poured: squashed to scale.y~0 the cylinder's top ring (r=0.39,
-  // meant for a full cup) collapses onto the same height as its narrower base
-  // ring, and 0.39 is wider than the body wall at that height (~0.32) — so a
-  // "flattened" liquid mesh still pokes a pale ring out through the body even
-  // at zero fill. This was the real source of the recurring "vành nước" bug;
-  // earlier fixes chased the contact shadow and foot cap, which were never it.
+  var liquidMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.001, LIQUID_R_BOTTOM, 0.001, 40, 1, false), liquidMat);
+  liquidMesh.position.y = LIQUID_BASE_Y;
+  // hidden until poured. The fill level used to animate via mesh.scale.y on a
+  // full-height cylinder (top ring r=0.39) — squashing only collapses Y, so the
+  // flattened disc kept its full 0.39 radius, wider than the body wall at that
+  // height (~0.32), and poked a pale ring through right as the pour began (and
+  // permanently at rest, before visible=false was added). Rebuilding the
+  // geometry as a true bottom slice of the tapered cup — height AND top radius
+  // both grow together via setLiquidFill() below — means the liquid always has
+  // the correct radius for its current height, so it can never poke out.
   liquidMesh.visible = false;
   potGroup.add(liquidMesh);
+  function setLiquidFill(frac){
+    frac = Math.max(0.0008, Math.min(1, frac));
+    var h = LIQUID_MAX_H*frac;
+    var topR = LIQUID_R_BOTTOM + (LIQUID_R_TOP-LIQUID_R_BOTTOM)*frac;
+    var newGeo = new THREE.CylinderGeometry(topR, LIQUID_R_BOTTOM, h, 40, 1, false);
+    newGeo.translate(0, h/2, 0);
+    liquidMesh.geometry.dispose();
+    liquidMesh.geometry = newGeo;
+  }
 
   // ripple
   var rippleGeo = new THREE.RingGeometry(0.20,0.24,40);
@@ -1113,7 +1124,7 @@
       dropletMesh.position.copy(p);
     });
     trembleLeaves();
-    animateValue(0,1,2200,easeInOutSine,function(v){ liquidMesh.scale.y = Math.max(0.001,v); }, function(){
+    animateValue(0,1,2200,easeInOutSine,function(v){ setLiquidFill(v); }, function(){
       fireSplash();
       rippleMesh.scale.set(0.4,0.4,0.4); rippleMat.opacity = 0.55;
       animateValue(0,1,1800,easeOutCubic,function(v){
@@ -1142,7 +1153,7 @@
       lidGroup.rotation.z = -v*0.5; lidGroup.rotation.x = v*0.12;
     });
     clearLeaves();
-    liquidMesh.scale.y = 0.001; liquidMesh.scale.x = 1; liquidMesh.scale.z = 1;
+    setLiquidFill(0); liquidMesh.scale.x = 1; liquidMesh.scale.z = 1;
     liquidMesh.visible = false;
     liquidMat.color.copy(WATER_COLOR);
     streamMat.opacity = 0; dropletMat.opacity = 0; rippleMat.opacity = 0; spoutMat.opacity = 0;

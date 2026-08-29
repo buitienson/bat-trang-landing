@@ -590,6 +590,7 @@
   var camTheta = 0.07, camPhi = 1.32, camRadiusBase = 2.05;
   var PHI_MIN = 0.35, PHI_MAX = 1.42;
   var zoom = 1;
+  var ZOOM_MIN = 0.42, ZOOM_MAX = 2.2; // wider range per feedback — was 0.7/1.4, too timid
 
   function layout(){
     var w = viewport.clientWidth, h = viewport.clientHeight;
@@ -672,8 +673,13 @@
   footCapMesh.position.y = 0.002;
   potGroup.add(footCapMesh);
 
+  // thinner wall than before (per feedback) — each radius moved about halfway
+  // from the old cavity wall out toward the body wall at the same height, so
+  // more of the cup reads as liquid rather than as ceramic; the rim point is
+  // untouched since it has to stay exactly on the body's last point (0 wall
+  // thickness at the lip is intentional, matches the real flared rim).
   var interiorPts = [
-    [0.47,0.555],[0.458,0.542],[0.44,0.50],[0.37,0.38],[0.28,0.22],[0.16,0.11],[0.0,0.085]
+    [0.47,0.555],[0.472,0.542],[0.469,0.50],[0.4275,0.38],[0.36,0.22],[0.26,0.11],[0.0,0.05]
   ].map(function(p){ return new THREE.Vector2(p[0],p[1]); });
   var interiorGeo = new THREE.LatheGeometry(interiorPts, 48);
   var interiorMat = new THREE.MeshPhysicalMaterial({color:0xF2ECDD, roughness:0.22, clearcoat:0.65, clearcoatRoughness:0.15, envMapIntensity:0.7, side:THREE.DoubleSide});
@@ -681,9 +687,12 @@
   potGroup.add(interiorMesh);
 
   // liquid (tea)
-  var LIQUID_R_BOTTOM = 0.16, LIQUID_R_TOP = 0.39, LIQUID_MAX_H = 0.37, LIQUID_BASE_Y = 0.125;
+  // radii widened to match the thinner cavity wall above, so the liquid
+  // still reads as filling the cup generously instead of leaving a visible
+  // ceramic margin now that the wall itself moved outward.
+  var LIQUID_R_BOTTOM = 0.24, LIQUID_R_TOP = 0.44, LIQUID_MAX_H = 0.37, LIQUID_BASE_Y = 0.125;
   var WATER_COLOR = new THREE.Color(0xF0F2EA);
-  var TEA_COLOR = new THREE.Color(0xCBD23C); // greener per feedback — was pure gold (F0CE1E)
+  var TEA_COLOR = new THREE.Color(0xA8820C); // deeper, richer gold per feedback (was the paler CBD23C)
   var liquidMat = new THREE.MeshPhysicalMaterial({color:WATER_COLOR.clone(), transparent:true, opacity:0.6, roughness:0.06, clearcoat:0.85, clearcoatRoughness:0.04, envMapIntensity:0.55, depthWrite:true});
   var liquidMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.001, LIQUID_R_BOTTOM, 0.001, 40, 1, false), liquidMat);
   liquidMesh.position.y = LIQUID_BASE_Y;
@@ -739,18 +748,42 @@
   lidGroup.add(knobMesh);
 
   var LID_BASE_Y = 0;
-  potGroup.add(lidGroup);
+
+  // The lid used to open by free-floating translate+rotate, ending up tilted
+  // in mid-air beside the pot with nothing visually holding it up. Instead,
+  // hinge it at a point right on the body's rim: lidGroup sits inside a pivot
+  // positioned there (offset back to cancel out, so closed = identical to
+  // before), and "opening" is just rotating that pivot around the tangent
+  // axis — the near edge stays anchored at the rim throughout, like the lid
+  // is leaning/pinned against the pot's own wall, rather than floating free.
+  // The pivot must sit exactly on the lid's OWN rim edge point (radius
+  // LID_MAXR, height matching lidPts' first point) — not an approximate
+  // body-rim radius — or the "fixed" hinge point actually orbits the true
+  // contact point as it rotates, opening into a growing gap at large angles.
+  var LID_HINGE_ANGLE = 1.9;
+  var lidHingeDir = new THREE.Vector3(Math.cos(LID_HINGE_ANGLE), 0, Math.sin(LID_HINGE_ANGLE));
+  var lidHingeAxis = new THREE.Vector3(-Math.sin(LID_HINGE_ANGLE), 0, Math.cos(LID_HINGE_ANGLE));
+  var lidHingePos = new THREE.Vector3(lidHingeDir.x*LID_MAXR, 0.554, lidHingeDir.z*LID_MAXR);
+  var lidPivot = new THREE.Group();
+  lidPivot.position.copy(lidHingePos);
+  lidGroup.position.copy(lidHingePos).multiplyScalar(-1);
+  lidPivot.add(lidGroup);
+  potGroup.add(lidPivot);
+  var LID_OPEN_ANGLE = 0.95; // ~54° — a shallower tip keeps the near edge close to the rim across more viewing angles
+  function setLidOpen(v){ lidPivot.quaternion.setFromAxisAngle(lidHingeAxis, -v*LID_OPEN_ANGLE); }
 
   // tea leaves (created lazily)
   var leaves = [];
-  var TEA_COLORS = [0x22300f, 0x3a4d1e, 0x2b3a15, 0x445a26];
+  // darkened toward near-black per feedback, to read as real dried tea buds
+  // rather than bright fresh-leaf green
+  var TEA_COLORS = [0x131a08, 0x202a11, 0x18200c, 0x253215];
   function spawnLeaves(){
     var n = 15;
     for(var i=0;i<n;i++){
       var arc = Math.PI*(1.0+Math.random()*0.7);
-      var geo = new THREE.TorusGeometry(0.020+Math.random()*0.011, 0.0034+Math.random()*0.0013, 5, 8, arc);
+      var geo = new THREE.TorusGeometry(0.019+Math.random()*0.010, 0.0024+Math.random()*0.0009, 6, 10, arc);
       geo.scale(1,1,0.45);
-      var mat = new THREE.MeshStandardMaterial({color: TEA_COLORS[i%TEA_COLORS.length], roughness:0.75});
+      var mat = new THREE.MeshStandardMaterial({color: TEA_COLORS[i%TEA_COLORS.length], roughness:0.8});
       var m = new THREE.Mesh(geo,mat);
       var ang = (i/n)*Math.PI*2 + Math.random()*0.6;
       var r = 0.05 + Math.random()*0.22;
@@ -1133,7 +1166,7 @@
     if(activePointers.size===2){
       var dist = pinchDistance();
       if(pinchStartDist>0 && dist>0){
-        zoom = Math.min(1.4, Math.max(0.7, pinchStartZoom*(pinchStartDist/dist)));
+        zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, pinchStartZoom*(pinchStartDist/dist)));
         applyCamera();
       }
       return;
@@ -1180,13 +1213,7 @@
   setStep(1,'active'); setHint(0);
 
   function openLid(){
-    animateValue(0,1,1650,easeInOutSine,function(v){
-      lidGroup.position.y = -v*0.16;
-      lidGroup.position.x = v*0.82;
-      lidGroup.position.z = v*0.18;
-      lidGroup.rotation.z = -v*0.5;
-      lidGroup.rotation.x = v*0.12;
-    });
+    animateValue(0,1,1650,easeInOutSine,function(v){ setLidOpen(v); });
     setStep(1,'done'); setStep(2,'active'); setHint(1);
   }
   function dropTea(){
@@ -1238,10 +1265,7 @@
     setStep(3,'done'); setHint(3);
   }
   function resetRitual(){
-    animateValue(1,0,500,easeOutCubic,function(v){
-      lidGroup.position.y = -v*0.16; lidGroup.position.x = v*0.82; lidGroup.position.z = v*0.18;
-      lidGroup.rotation.z = -v*0.5; lidGroup.rotation.x = v*0.12;
-    });
+    animateValue(1,0,500,easeOutCubic,function(v){ setLidOpen(v); });
     clearLeaves();
     setLiquidFill(0); liquidMesh.scale.x = 1; liquidMesh.scale.z = 1;
     liquidMesh.visible = false;
@@ -1274,7 +1298,7 @@
   canvas.addEventListener('wheel', function(e){
     if(!e.ctrlKey) return;
     e.preventDefault();
-    zoom = Math.min(1.4, Math.max(0.7, zoom + e.deltaY*0.012));
+    zoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoom + e.deltaY*0.016));
     applyCamera();
   }, {passive:false});
 

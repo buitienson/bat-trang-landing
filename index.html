@@ -749,28 +749,34 @@
 
   var LID_BASE_Y = 0;
 
-  // The lid used to open by free-floating translate+rotate, ending up tilted
-  // in mid-air beside the pot with nothing visually holding it up. Instead,
-  // hinge it at a point right on the body's rim: lidGroup sits inside a pivot
-  // positioned there (offset back to cancel out, so closed = identical to
-  // before), and "opening" is just rotating that pivot around the tangent
-  // axis — the near edge stays anchored at the rim throughout, like the lid
-  // is leaning/pinned against the pot's own wall, rather than floating free.
-  // The pivot must sit exactly on the lid's OWN rim edge point (radius
-  // LID_MAXR, height matching lidPts' first point) — not an approximate
-  // body-rim radius — or the "fixed" hinge point actually orbits the true
-  // contact point as it rotates, opening into a growing gap at large angles.
+  // The lid used to just float in mid-air, tilted with nothing under it.
+  // What it should do instead: tip up onto its own rim edge like a lid set
+  // down beside its pot — bottom edge resting on the table (the same ground
+  // plane the pot's foot sits on, y=0), top of the dome leaning against the
+  // pot's outer wall for support. That's a full pose change (position AND
+  // rotation), so closed and open are each defined as an explicit pose and
+  // we slerp/lerp between them, rather than rotating around a single hinge
+  // point the way a hatch or cabinet door would.
   var LID_HINGE_ANGLE = 1.9;
   var lidHingeDir = new THREE.Vector3(Math.cos(LID_HINGE_ANGLE), 0, Math.sin(LID_HINGE_ANGLE));
   var lidHingeAxis = new THREE.Vector3(-Math.sin(LID_HINGE_ANGLE), 0, Math.cos(LID_HINGE_ANGLE));
-  var lidHingePos = new THREE.Vector3(lidHingeDir.x*LID_MAXR, 0.554, lidHingeDir.z*LID_MAXR);
-  var lidPivot = new THREE.Group();
-  lidPivot.position.copy(lidHingePos);
-  lidGroup.position.copy(lidHingePos).multiplyScalar(-1);
-  lidPivot.add(lidGroup);
-  potGroup.add(lidPivot);
-  var LID_OPEN_ANGLE = 0.95; // ~54° — a shallower tip keeps the near edge close to the rim across more viewing angles
-  function setLidOpen(v){ lidPivot.quaternion.setFromAxisAngle(lidHingeAxis, -v*LID_OPEN_ANGLE); }
+  var LID_RIM_Y = 0.554, LID_RIM_R = LID_MAXR;
+  var LID_LEAN_ANGLE = 1.42;  // tip from closed — how far onto its edge the lid rolls
+  var LID_LEAN_DIST = 0.24;   // how far sideways from the pot's axis it comes to rest
+  var lidOpenQuat = new THREE.Quaternion().setFromAxisAngle(lidHingeAxis, -LID_LEAN_ANGLE);
+  var lidRimCenterTilted = new THREE.Vector3(0, LID_RIM_Y, 0).applyQuaternion(lidOpenQuat);
+  var lidOpenPos = new THREE.Vector3(
+    lidHingeDir.x*LID_LEAN_DIST,
+    LID_RIM_R - lidRimCenterTilted.y, // lifts the group just enough that the rim's lowest point lands on y=0
+    lidHingeDir.z*LID_LEAN_DIST
+  );
+  var lidClosedQuat = new THREE.Quaternion();
+  var lidClosedPos = new THREE.Vector3(0,0,0);
+  potGroup.add(lidGroup);
+  function setLidOpen(v){
+    lidGroup.position.lerpVectors(lidClosedPos, lidOpenPos, v);
+    lidGroup.quaternion.slerpQuaternions(lidClosedQuat, lidOpenQuat, v);
+  }
 
   // tea leaves (created lazily)
   var leaves = [];

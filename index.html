@@ -761,22 +761,26 @@
   var lidHingeDir = new THREE.Vector3(Math.cos(LID_HINGE_ANGLE), 0, Math.sin(LID_HINGE_ANGLE));
   var lidHingeAxis = new THREE.Vector3(-Math.sin(LID_HINGE_ANGLE), 0, Math.cos(LID_HINGE_ANGLE));
   var LID_RIM_Y = 0.554, LID_RIM_R = LID_MAXR;
-  // Earlier values (up to 81°, then 57°) were picked by eye and never
-  // actually touched in 3D — at a steep tilt the dome's near edge lifts
-  // AWAY from the body as it rotates about this ground-anchored pivot, so
-  // no horizontal offset could close the gap without the pose also getting
-  // more implausible. Solved it properly instead: sampled the lid+knob
-  // profile at 96 azimuths for a range of (angle, offset) pairs and picked
-  // the one where the closest approach to the body's own profile is ~0
-  // (a hair's-breadth negative, so it errs toward touching, not floating).
-  // That worked out to a much shallower tip than any of the guesses.
-  var LID_LEAN_ANGLE = 0.5;   // ~29° tip from closed
-  var LID_LEAN_DIST = -0.01;  // sideways offset from the pot's axis (solved, not guessed)
+  // Solved numerically: sampled the lid+knob profile at many azimuths for a
+  // range of (angle, offset) pairs and picked the one where the closest
+  // approach to the body's own profile is ~0 (a hair's-breadth negative, so
+  // it errs toward touching, not floating) — same method as before, but
+  // that first pass had a real bug in the *grounding* half of the pose: the
+  // "lift so the rim's lowest point lands on y=0" formula was `LID_RIM_R -
+  // center.y`, which only happens to be correct right at a ~90° tilt. At any
+  // other angle the tilted rim-circle's lowest point sits `R*sin(angle)`
+  // below its center, not a full `R` — using the wrong constant left the
+  // whole pose floating above the true table height. Fixed to use
+  // `R*|sin(angle)|` (verified by sampling the rotated rim circle directly:
+  // its lowest point now measures 0 to within float error at every angle),
+  // then re-solved for the touching angle against the *corrected* pose.
+  var LID_LEAN_ANGLE = 0.87;  // ~50° tip from closed
+  var LID_LEAN_DIST = 0.0;    // sideways offset from the pot's axis
   var lidOpenQuat = new THREE.Quaternion().setFromAxisAngle(lidHingeAxis, -LID_LEAN_ANGLE);
   var lidRimCenterTilted = new THREE.Vector3(0, LID_RIM_Y, 0).applyQuaternion(lidOpenQuat);
   var lidOpenPos = new THREE.Vector3(
     lidHingeDir.x*LID_LEAN_DIST,
-    LID_RIM_R - lidRimCenterTilted.y, // lifts the group just enough that the rim's lowest point lands on y=0
+    LID_RIM_R*Math.abs(Math.sin(LID_LEAN_ANGLE)) - lidRimCenterTilted.y, // grounds the rim's true lowest point at y=0, for any angle
     lidHingeDir.z*LID_LEAN_DIST
   );
   var lidClosedQuat = new THREE.Quaternion();
@@ -927,6 +931,20 @@
     mctx.beginPath(); mctx.ellipse(w*0.5,h*0.5,w*0.49,h*0.49,0,0,Math.PI*2); mctx.fill();
     mctx.restore();
   }
+  // The real Cúc photo fills its panel edge-to-edge; the three hand-drawn
+  // motifs, drawn free-hand at whatever size looked right in isolation,
+  // measured out at only 55-75% of the frame width — most visibly Mai,
+  // which read as a noticeably smaller sprig next to the others on the pot.
+  // Rather than re-plot every coordinate, scale+recenter each motif's own
+  // measured ink bounding box onto one shared target box so all four panels
+  // carry the same footprint and only the artwork inside differs.
+  function fitToFrame(ctx, bbox, targetCx, targetCy, targetW, targetH){
+    var bcx = (bbox.minX+bbox.maxX)/2, bcy = (bbox.minY+bbox.maxY)/2;
+    ctx.translate(targetCx, targetCy);
+    ctx.scale(targetW/bbox.w, targetH/bbox.h);
+    ctx.translate(-bcx, -bcy);
+  }
+  var MOTIF_TARGET = {cx:320, cy:250.5, w:550, h:451};
   function motifStroke(mctx, pts, width, color, alpha){
     mctx.save();
     mctx.globalAlpha = alpha===undefined?1:alpha;
@@ -959,6 +977,8 @@
   }
   function drawTung(mctx,w,h){
     motifGroundWash(mctx,w,h);
+    mctx.save();
+    fitToFrame(mctx, {minX:34,minY:0,maxX:516,maxY:476,w:482,h:476}, MOTIF_TARGET.cx,MOTIF_TARGET.cy,MOTIF_TARGET.w,MOTIF_TARGET.h);
     motifStroke(mctx, [[40,470],[150,400],[240,360],[290,280],[335,190],[365,110]], 13, MOTIF_INK, 1);
     motifStroke(mctx, [[290,280],[230,255],[165,245]], 7, MOTIF_INK, 1);
     motifStroke(mctx, [[240,360],[300,340],[350,335]], 7, MOTIF_INK, 1);
@@ -972,6 +992,7 @@
     pineNeedles(mctx, 290,280, -0.9, 1.6, 8, 40, MOTIF_INK3, 2.0);
     pinecone(mctx, 300,225, 0.55, 1.05);
     pinecone(mctx, 400,205, -0.3, 0.85);
+    mctx.restore();
   }
   function bambooStalk(mctx, pts, width, color){
     mctx.save();
@@ -1012,6 +1033,8 @@
   }
   function drawTruc(mctx,w,h){
     motifGroundWash(mctx,w,h);
+    mctx.save();
+    fitToFrame(mctx, {minX:36,minY:0,maxX:498,maxY:494,w:462,h:494}, MOTIF_TARGET.cx,MOTIF_TARGET.cy,MOTIF_TARGET.w,MOTIF_TARGET.h);
     bambooStalk(mctx, [[170,485],[178,410],[158,410],[165,335],[145,335],[153,255],[133,255],[141,170],[121,170],[128,80]], 20, MOTIF_INK);
     bambooStalk(mctx, [[310,485],[325,415],[310,415],[320,335],[305,335],[315,245],[300,245],[308,145]], 17, MOTIF_INK2);
     bambooStalk(mctx, [[440,485],[450,435],[438,435],[445,365],[432,365],[440,285],[427,285],[434,200]], 14, MOTIF_INK3);
@@ -1023,6 +1046,7 @@
     bambooLeafCluster(mctx, 320,335,  0.55,1.0, 3, 55,  MOTIF_INK2);
     bambooLeafCluster(mctx, 440,285, -0.6, 1.2, 4, 88,  MOTIF_INK3);
     bambooLeafCluster(mctx, 434,200, -0.3, 1.1, 4, 75,  MOTIF_INK3);
+    mctx.restore();
   }
   function plumZigzag(mctx, pts, width, color){
     mctx.save();
@@ -1058,6 +1082,8 @@
   }
   function drawMai(mctx,w,h){
     motifGroundWash(mctx,w,h);
+    mctx.save();
+    fitToFrame(mctx, {minX:54,minY:52,maxX:408,maxY:474,w:354,h:422}, MOTIF_TARGET.cx,MOTIF_TARGET.cy,MOTIF_TARGET.w,MOTIF_TARGET.h);
     plumZigzag(mctx, [[60,470],[130,430],[120,370],[190,340],[175,270],[250,230],[230,160],[300,120]], 11, MOTIF_INK);
     plumZigzag(mctx, [[190,340],[240,320],[290,300]], 5, MOTIF_INK2);
     plumZigzag(mctx, [[250,230],[300,250],[350,260]], 5, MOTIF_INK2);
@@ -1074,6 +1100,7 @@
     plumBud(mctx, 280,150, 6, MOTIF_INK3);
     plumBud(mctx, 120,370, 5, MOTIF_INK3);
     plumBud(mctx, 340,90, 5, MOTIF_INK);
+    mctx.restore();
   }
 
   // ---- body + lid textures from real photos ----

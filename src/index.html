@@ -739,11 +739,16 @@
   var lidInnerMesh = new THREE.Mesh(lidGeo, lidInnerMat);
   lidGroup.add(lidInnerMesh);
 
+  // A single smooth taper (narrow neck, flare to a rim, shallow dish on top)
+  // like the real photo — the old profile flared out near the base (0.128)
+  // THEN pinched back in before flaring a second time toward the top, so
+  // from the side it read as two separate white blobs pinched together
+  // rather than one knob.
   var knobPts = [
-    [0.11,0.703],[0.128,0.715],[0.098,0.733],[0.072,0.752],[0.074,0.778],[0.092,0.792],[0.082,0.80],[0.05,0.805],[0.0,0.807]
+    [0.11,0.703],[0.082,0.735],[0.07,0.760],[0.086,0.785],[0.105,0.800],[0.09,0.806],[0.04,0.803],[0.0,0.797]
   ].map(function(p){ return new THREE.Vector2(p[0],p[1]); });
   var knobGeo = new THREE.LatheGeometry(knobPts, 32);
-  var knobMat = new THREE.MeshPhysicalMaterial({color:0xF4F1E4, roughness:0.25, clearcoat:0.6, clearcoatRoughness:0.15, envMapIntensity:1.0, side:THREE.DoubleSide});
+  var knobMat = new THREE.MeshPhysicalMaterial({color:0xF4F1E4, roughness:0.3, clearcoat:0.55, clearcoatRoughness:0.18, envMapIntensity:0.7, side:THREE.DoubleSide});
   var knobMesh = new THREE.Mesh(knobGeo, knobMat);
   lidGroup.add(knobMesh);
 
@@ -796,12 +801,43 @@
   // darkened toward near-black per feedback, to read as real dried tea buds
   // rather than bright fresh-leaf green
   var TEA_COLORS = [0x131a08, 0x202a11, 0x18200c, 0x253215];
+  // Real dried tea (trà búp/móc câu) rolls into a tapered hook — thin at both
+  // ends, thickest at the middle of the curl — not a uniform-thickness ring.
+  // A plain TorusGeometry arc (the previous shape) has constant tube radius
+  // along its whole length, which reads as a smooth machined hook rather
+  // than a rolled leaf. Build the curl as a tube along a curved path instead,
+  // then taper each cross-section's radius by how far it is from the middle.
+  function tealeafGeometry(arc, curlR, maxTube){
+    var N = 10, pts = [];
+    for(var k=0;k<=N;k++){
+      var a = (k/N)*arc;
+      pts.push(new THREE.Vector3(Math.cos(a)*curlR, 0, Math.sin(a)*curlR));
+    }
+    var curve = new THREE.CatmullRomCurve3(pts);
+    var tubularSegments = 16, radialSegments = 6;
+    var geo = new THREE.TubeGeometry(curve, tubularSegments, maxTube, radialSegments, false);
+    var posAttr = geo.attributes.position;
+    var ringCount = radialSegments + 1;
+    for(var seg=0; seg<=tubularSegments; seg++){
+      var t = seg/tubularSegments;
+      var taper = 0.16 + 0.84*Math.sin(Math.PI*t); // thin tips, full middle, never quite to a point
+      var c = curve.getPointAt(t);
+      for(var r=0;r<ringCount;r++){
+        var idx = seg*ringCount + r;
+        if(idx>=posAttr.count) continue;
+        var vx=posAttr.getX(idx), vy=posAttr.getY(idx), vz=posAttr.getZ(idx);
+        posAttr.setXYZ(idx, c.x+(vx-c.x)*taper, c.y+(vy-c.y)*taper, c.z+(vz-c.z)*taper);
+      }
+    }
+    posAttr.needsUpdate = true;
+    geo.computeVertexNormals();
+    return geo;
+  }
   function spawnLeaves(){
     var n = 15;
     for(var i=0;i<n;i++){
-      var arc = Math.PI*(1.0+Math.random()*0.7);
-      var geo = new THREE.TorusGeometry(0.019+Math.random()*0.010, 0.0024+Math.random()*0.0009, 6, 10, arc);
-      geo.scale(1,1,0.45);
+      var arc = Math.PI*(1.1+Math.random()*0.7);
+      var geo = tealeafGeometry(arc, 0.017+Math.random()*0.009, 0.0034+Math.random()*0.0013);
       var mat = new THREE.MeshStandardMaterial({color: TEA_COLORS[i%TEA_COLORS.length], roughness:0.8});
       var m = new THREE.Mesh(geo,mat);
       var ang = (i/n)*Math.PI*2 + Math.random()*0.6;

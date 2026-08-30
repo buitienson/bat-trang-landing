@@ -761,8 +761,15 @@
   var lidHingeDir = new THREE.Vector3(Math.cos(LID_HINGE_ANGLE), 0, Math.sin(LID_HINGE_ANGLE));
   var lidHingeAxis = new THREE.Vector3(-Math.sin(LID_HINGE_ANGLE), 0, Math.cos(LID_HINGE_ANGLE));
   var LID_RIM_Y = 0.554, LID_RIM_R = LID_MAXR;
-  var LID_LEAN_ANGLE = 1.42;  // tip from closed — how far onto its edge the lid rolls
-  var LID_LEAN_DIST = 0.24;   // how far sideways from the pot's axis it comes to rest
+  // A tilt this steep (was 1.42 ~81°) turned out to be very sensitive to the
+  // page's aspect ratio: on a wide/short viewport the perspective distortion
+  // on an edge-on disk swung the lid's apparent position far enough that it
+  // read as floating disconnected from the pot instead of leaning on it.
+  // A shallower tilt shows more of the lid's face (less edge-on), which is
+  // far less sensitive to that distortion — verified across narrow, normal,
+  // and very wide desktop aspect ratios.
+  var LID_LEAN_ANGLE = 1.0;   // ~57° tip from closed
+  var LID_LEAN_DIST = 0.10;   // how far sideways from the pot's axis it comes to rest
   var lidOpenQuat = new THREE.Quaternion().setFromAxisAngle(lidHingeAxis, -LID_LEAN_ANGLE);
   var lidRimCenterTilted = new THREE.Vector3(0, LID_RIM_Y, 0).applyQuaternion(lidOpenQuat);
   var lidOpenPos = new THREE.Vector3(

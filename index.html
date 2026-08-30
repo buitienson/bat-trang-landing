@@ -761,15 +761,17 @@
   var lidHingeDir = new THREE.Vector3(Math.cos(LID_HINGE_ANGLE), 0, Math.sin(LID_HINGE_ANGLE));
   var lidHingeAxis = new THREE.Vector3(-Math.sin(LID_HINGE_ANGLE), 0, Math.cos(LID_HINGE_ANGLE));
   var LID_RIM_Y = 0.554, LID_RIM_R = LID_MAXR;
-  // A tilt this steep (was 1.42 ~81°) turned out to be very sensitive to the
-  // page's aspect ratio: on a wide/short viewport the perspective distortion
-  // on an edge-on disk swung the lid's apparent position far enough that it
-  // read as floating disconnected from the pot instead of leaning on it.
-  // A shallower tilt shows more of the lid's face (less edge-on), which is
-  // far less sensitive to that distortion — verified across narrow, normal,
-  // and very wide desktop aspect ratios.
-  var LID_LEAN_ANGLE = 1.0;   // ~57° tip from closed
-  var LID_LEAN_DIST = 0.10;   // how far sideways from the pot's axis it comes to rest
+  // Earlier values (up to 81°, then 57°) were picked by eye and never
+  // actually touched in 3D — at a steep tilt the dome's near edge lifts
+  // AWAY from the body as it rotates about this ground-anchored pivot, so
+  // no horizontal offset could close the gap without the pose also getting
+  // more implausible. Solved it properly instead: sampled the lid+knob
+  // profile at 96 azimuths for a range of (angle, offset) pairs and picked
+  // the one where the closest approach to the body's own profile is ~0
+  // (a hair's-breadth negative, so it errs toward touching, not floating).
+  // That worked out to a much shallower tip than any of the guesses.
+  var LID_LEAN_ANGLE = 0.5;   // ~29° tip from closed
+  var LID_LEAN_DIST = -0.01;  // sideways offset from the pot's axis (solved, not guessed)
   var lidOpenQuat = new THREE.Quaternion().setFromAxisAngle(lidHingeAxis, -LID_LEAN_ANGLE);
   var lidRimCenterTilted = new THREE.Vector3(0, LID_RIM_Y, 0).applyQuaternion(lidOpenQuat);
   var lidOpenPos = new THREE.Vector3(

@@ -1,7 +1,50 @@
 <!doctype html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ấm Xưa</title>
+<title>Ấm Xưa — Chén Nắp Sen gốm Bát Tràng vẽ lam thủ công</title>
+<meta name="description" content="Chén Nắp Sen nặn tay, vẽ lam thủ công ở làng gốm Bát Tràng bên sông Hồng — nắp vẽ hoa sen, thân vẽ mẫu đơn và cúc. Xem mô hình 3D thật của sản phẩm, nhắn Zalo để đặt bộ ấm chén.">
+<link rel="canonical" href="https://buitienson.github.io/bat-trang-landing/">
+
+<!-- Open Graph / Facebook, Zalo -->
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="Ấm Xưa">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:title" content="Ấm Xưa — Chén Nắp Sen gốm Bát Tràng vẽ lam thủ công">
+<meta property="og:description" content="Chén Nắp Sen nặn tay, vẽ lam thủ công ở làng gốm Bát Tràng bên sông Hồng — nắp vẽ hoa sen, thân vẽ mẫu đơn và cúc. Mỗi chiếc một đường vẽ riêng, không đúc khuôn.">
+<meta property="og:image" content="https://buitienson.github.io/bat-trang-landing/assets/images/product-whole-web.jpg">
+<meta property="og:url" content="https://buitienson.github.io/bat-trang-landing/">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ấm Xưa — Chén Nắp Sen gốm Bát Tràng vẽ lam thủ công">
+<meta name="twitter:description" content="Chén Nắp Sen nặn tay, vẽ lam thủ công ở làng gốm Bát Tràng bên sông Hồng — nắp vẽ hoa sen, thân vẽ mẫu đơn và cúc.">
+<meta name="twitter:image" content="https://buitienson.github.io/bat-trang-landing/assets/images/product-whole-web.jpg">
+
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Ccircle cx='13' cy='13' r='12' fill='%232C4A63'/%3E%3Cpath d='M6 13c2.5 3 11.5 3 14 0' stroke='%23F3EFDF' stroke-width='1.3' fill='none' stroke-linecap='round'/%3E%3Cpath d='M6 13c2.5-3 11.5-3 14 0' stroke='%23F3EFDF' stroke-width='1.3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Chén Nắp Sen — gốm Bát Tràng vẽ lam thủ công",
+  "description": "Chén Nắp Sen nặn tay và vẽ lam ở làng gốm Bát Tràng, bên bờ sông Hồng — nắp vẽ hoa sen, thân vẽ mẫu đơn và cúc. Nung 1280°C, vẽ lam trước khi tráng men.",
+  "image": "https://buitienson.github.io/bat-trang-landing/assets/images/product-whole-web.jpg",
+  "brand": { "@type": "Brand", "name": "Ấm Xưa" },
+  "url": "https://buitienson.github.io/bat-trang-landing/"
+}
+</script>
+
+<!-- Google Analytics 4: thay G-XXXXXXXXXX bằng Measurement ID thật của bạn rồi bỏ comment khối dưới để bắt đầu đo lượt truy cập -->
+<!--
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+-->
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -99,6 +142,19 @@
   .btn-ghost{ background:transparent; border-color:var(--line); color:var(--ink); }
   .btn-ghost:hover{ border-color:var(--celadon-deep); color:var(--celadon-deep); }
   .btn:focus-visible{ outline:2px solid var(--celadon-deep); outline-offset:2px; }
+  .btn-zalo{ background:#0068FF; color:#fff; }
+  .btn-zalo:hover{ background:#0054CC; box-shadow:0 6px 18px -6px var(--shadow); }
+  .btn-zalo svg{ flex:none; width:18px; height:18px; }
+
+  .float-zalo{ position:fixed; right:20px; bottom:20px; z-index:60; display:flex; align-items:center; gap:10px; }
+  .float-zalo a{ display:flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; background:#0068FF; color:#fff; box-shadow:0 8px 24px -6px rgba(0,0,0,0.45); text-decoration:none; position:relative; transition:transform .2s ease; }
+  .float-zalo a:hover{ transform:scale(1.06); }
+  .float-zalo a svg{ width:28px; height:28px; }
+  .float-zalo a::before{ content:""; position:absolute; inset:-6px; border-radius:50%; border:2px solid #0068FF; opacity:0.55; animation:zaloPulse 2.6s ease-out infinite; }
+  .float-zalo .float-label{ font-size:0.78rem; font-weight:600; color:var(--ink); background:color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter:blur(6px); padding:7px 12px; border-radius:20px; border:1px solid var(--line); white-space:nowrap; }
+  @keyframes zaloPulse{ 0%{ transform:scale(1); opacity:0.55; } 100%{ transform:scale(1.35); opacity:0; } }
+  @media (max-width:640px){ .float-zalo .float-label{ display:none; } .float-zalo{ right:16px; bottom:16px; } }
+  @media (prefers-reduced-motion: reduce){ .float-zalo a::before{ animation:none; } }
 
   /* ---- full-bleed 3D stage ---- */
   .stage-full{
@@ -335,6 +391,16 @@
   </nav>
 </header>
 
+<div class="float-zalo">
+  <span class="float-label">Chat Zalo với xưởng</span>
+  <a href="#" class="js-zalo-link" aria-label="Nhắn Zalo cho xưởng Ấm Xưa" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M12 3C6.99 3 3 6.6 3 11c0 2.55 1.34 4.83 3.44 6.32-.15.98-.55 2.15-1.29 3.18a.5.5 0 0 0 .53.78c1.86-.45 3.35-1.28 4.24-1.9.98.23 2.02.35 3.08.35 5.01 0 9-3.6 9-8s-3.99-8-9-8Z" fill="#fff"/>
+      <text x="12" y="14.5" text-anchor="middle" font-size="7.5" font-weight="700" fill="#0068FF" font-family="Arial, sans-serif">Za</text>
+    </svg>
+  </a>
+</div>
+
 <main>
   <section class="hero" id="trai-nghiem">
     <div class="stage-full">
@@ -353,7 +419,10 @@
           từ chiếc chén thật: chạm vào chén để mở nắp, thả trà rồi rót nước.
         </p>
         <div class="hero-cta">
-          <a href="#lien-he" class="btn btn-primary">Đặt bộ ấm chén</a>
+          <a href="#" class="btn btn-zalo js-zalo-link" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3C6.99 3 3 6.6 3 11c0 2.55 1.34 4.83 3.44 6.32-.15.98-.55 2.15-1.29 3.18a.5.5 0 0 0 .53.78c1.86-.45 3.35-1.28 4.24-1.9.98.23 2.02.35 3.08.35 5.01 0 9-3.6 9-8s-3.99-8-9-8Z" fill="#fff"/></svg>
+            Đặt bộ ấm chén qua Zalo
+          </a>
           <a href="#lang-nghe" class="btn btn-ghost">Chuyện làng nghề →</a>
         </div>
       </div>
@@ -499,10 +568,13 @@
         <div>
           <p class="eyebrow" style="color:var(--gold)">Đặt hàng</p>
           <h2>Rước một bộ ấm chén Bát Tràng về nhà</h2>
-          <p>Sản xuất theo đợt nhỏ, giao hàng có lót rơm chống sốc. Nhắn cho xưởng để xem hàng còn hay đặt riêng theo mẫu vẽ.</p>
+          <p>Sản xuất theo đợt nhỏ, giao hàng có lót rơm chống sốc. Nhắn Zalo để xem ảnh hàng còn, hỏi giá hoặc đặt riêng theo mẫu vẽ.</p>
           <div class="cta-btnrow">
-            <a href="mailto:xin-chao@amxua.vn" class="btn btn-primary">xin-chao@amxua.vn</a>
-            <a href="#san-pham" class="btn btn-ghost">Xem sản phẩm</a>
+            <a href="#" class="btn btn-zalo js-zalo-link" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 3C6.99 3 3 6.6 3 11c0 2.55 1.34 4.83 3.44 6.32-.15.98-.55 2.15-1.29 3.18a.5.5 0 0 0 .53.78c1.86-.45 3.35-1.28 4.24-1.9.98.23 2.02.35 3.08.35 5.01 0 9-3.6 9-8s-3.99-8-9-8Z" fill="#fff"/></svg>
+              Chat Zalo với xưởng
+            </a>
+            <a href="mailto:xin-chao@amxua.vn" class="btn btn-ghost">xin-chao@amxua.vn</a>
           </div>
         </div>
         <div class="seal">Bát<br>Tràng<br>Gốm</div>
@@ -1437,5 +1509,15 @@
       });
     });
   }
+})();
+</script>
+
+<script>
+// ĐẶT SỐ ZALO CỦA XƯỞNG Ở ĐÂY — số điện thoại đã đăng ký Zalo, không dấu cách/gạch ngang.
+// Ví dụ: '0912345678'. Mọi nút "Chat Zalo" trên trang sẽ tự dùng số này.
+var ZALO_PHONE = '0000000000';
+(function(){
+  var link = 'https://zalo.me/' + ZALO_PHONE;
+  document.querySelectorAll('.js-zalo-link').forEach(function(a){ a.href = link; });
 })();
 </script>
